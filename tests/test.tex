@@ -1,0 +1,25 @@
+\documentclass{article}
+
+\newcommand\logtime[1]{%
+	#1\typeout{#1: \the\pdfelapsedtime}%
+}
+
+\typeout{pre usepackage: \the\pdfelapsedtime}
+\usepackage
+	{fractional-math}
+\typeout{post usepackage: \the\pdfelapsedtime}
+
+\fracKeys{
+	number style = {\num{#1}}
+}
+
+\usepackage{siunitx}
+\sisetup{locale = UK}
+
+\typeout{pre begindoc: \the\pdfelapsedtime}
+\begin{document} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\logtime{number 1+halv} \hfill \fracFormat{1 1/2}
+
+\logtime{pre enddoc}
+\end{document}

@@ -1,0 +1,119 @@
+\RequirePackage{expl3}[2023-10-10]
+\ProvidesExplPackage{fractional-math}{2024/05/27}{1.0.1}{Macros for TODO}
+
+% License: CC-BY-SA 4.0
+% Author: Mikkel Eide Eriksen <mikkel.eriksen@gmail.com>
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Key setup
+% 
+
+\keys_define:nn { fractional-math }
+{
+	% styling
+	fraction~style				.cs_set:Np		= \fracmath_fraction_handler:nn #1#2 ,
+	number~style				.cs_set:Np		= \fracmath_number_handler:n #1 ,
+}
+
+\NewDocumentCommand { \fracKeys } { m } {
+	\keys_set:nn { fractional-math } { #1 }
+}
+
+% set some defaults
+\keys_set:nn { fractional-math } {
+	fraction~style = {
+		$\frac{#1}{#2}$
+	},
+	number~style = {
+		#1
+	},
+}
+
+\cs_generate_variant:Nn \fracmath_fraction_handler:nn {
+	VV
+}
+\cs_generate_variant:Nn \fracmath_number_handler:n {
+	V
+}
+
+\cs_new_protected:Nn \fracmath_number_wrapper:n {
+	\regex_match:nnTF { \A [\+\-]?[\d]+ \Z } {#1}
+		{ \fracmath_number_handler:n {#1} }
+		{ #1 }
+}
+\cs_generate_variant:Nn \fracmath_number_wrapper:n {
+	V
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Helpers
+% 
+
+\cs_new_protected:Nn \fracmath_gcd:nn
+{
+	\int_if_zero:nTF { #2 }
+		{ #1 }
+		{ \fracmath_gcd:nn { #2 } { \int_mod:nn { #1 } { #2 } } }
+}
+
+\cs_new_protected:Nn \fracmath_reduce_fraction:NN
+{
+	\int_set:Nn \l_tmpa_int { \fracmath_gcd:nn { #1 } { #2 } }
+	\int_set:Nn #1 { #1 / \l_tmpa_int }
+	\int_set:Nn #2 { #2 / \l_tmpa_int }
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Parsing
+% 
+
+% Parses a value of the format "n a/b"
+\cs_new_protected:Nn \fracmath_parse:Nn {
+	\prop_clear_new:N #1
+
+	\seq_set_split:Nnn \l_tmpa_seq { ~ } { #2 }
+	% first part (n)
+	\seq_get_left:NNT \l_tmpa_seq \l__fracmath_value_tl {
+		\tl_if_empty:NF \l__fracmath_value_tl {
+			\prop_put:NnV #1 { integer } \l__fracmath_value_tl
+		}
+	}
+	% second part (a/b)
+	\seq_set_split:Nne \l_tmpb_seq { / } { \seq_item:Nn \l_tmpa_seq { 2 } }
+	\int_compare:nNnT { \seq_count:N \l_tmpb_seq } = { 2 } {
+		\prop_put:Nne #1 { numerator } { \seq_item:Nn \l_tmpb_seq { 1 } }
+		\prop_put:Nne #1 { denominator } { \seq_item:Nn \l_tmpb_seq { 2 } }
+	}
+}
+\cs_generate_variant:Nn \fracmath_parse:Nn
+{
+	Ne, NV
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% User commands
+% 
+
+\cs_new_protected:Nn \fracmath_format:N
+{
+	\prop_get:NnNT #1 { integer } \l__fracmath_tmp_value_tl {
+		\fracmath_number_wrapper:V \l__fracmath_tmp_value_tl
+	}
+	\prop_get:NnNT #1 { numerator } \l__fracmath_tmp_numerator_int {
+		\prop_get:NnN #1 { denominator } \l__fracmath_tmp_denominator_int
+		\fracmath_fraction_handler:VV
+			\l__fracmath_tmp_numerator_int
+			\l__fracmath_tmp_denominator_int
+	}
+}
+
+\NewDocumentCommand \fracFormat { O{} m } {
+	\group_begin:
+		\keys_set:nn { fractional-math } { #1 }
+
+		\prop_clear_new:N \l__fracmath_tmpa_prop
+		\fracmath_parse:Nn \l__fracmath_tmpa_prop { #2 }
+		\fracmath_format:N \l__fracmath_tmpa_prop
+	\group_end:
+}
+
