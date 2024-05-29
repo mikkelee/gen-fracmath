@@ -90,7 +90,7 @@
 }
 \cs_generate_variant:Nn \fracmath_parse:Nn
 {
-	Ne, NV
+	Ne, NV, cn
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -195,6 +195,10 @@
 			\l__fracmath_tmp_denominator_int
 	}
 }
+\cs_generate_variant:Nn \fracmath_format:N
+{
+	c
+}
 
 \NewDocumentCommand \fracFormat { O{} m } {
 	\group_begin:
@@ -206,3 +210,30 @@
 	\group_end:
 }
 
+\NewDocumentCommand \fracReset { m } {
+	\prop_gclear_new:c { g_fracmath_#1_var }
+}
+
+\NewDocumentCommand \fracInit { m m } {
+	\prop_gclear_new:c { g_fracmath_#1_var }
+
+	\fracmath_parse:cn { g_fracmath_#1_var } { #2 }
+}
+
+\NewDocumentCommand \fracMath { O{} m m m } {
+	\group_begin:
+		\keys_set:nn { fractional-math } { #1 }
+
+		\fracmath_parse:Nn \l__fracmath_tmpa_prop { #4 }
+
+		\fracmath_garithmetic:cnN { g_fracmath_#2_var } { #3 } \l__fracmath_tmpa_prop
+	\group_end:
+}
+
+\NewDocumentCommand \fracResult { O{} m } {
+	\group_begin:
+		\keys_set:nn { fractional-math } { #1 }
+
+		\fracmath_format:c { g_fracmath_#2_var }
+	\group_end:
+}
