@@ -27,5 +27,20 @@
 
 \logtime{number 1+3halv reduce = 2.5} \hfill \fracFormat[reduce]{1 3/2}
 
+math
+
+\begingroup
+	\fracKeys{add to variable=XYZ}
+	\logtime{number 1+halv add to XYZ} \hfill \fracFormat{1 1/2}
+
+	\logtime{number 1+halv add to XYZ} \hfill \fracFormat{1 1/2}
+
+	\logtime{number 1+halv add to XYZ} \hfill \fracFormat{1 1/2}
+
+	\logtime{result} \hfill \fracResult{XYZ}
+	
+	\logtime{result reduce} \hfill \fracResult[reduce]{XYZ}
+\endgroup
+
 \logtime{pre enddoc}
 \end{document}
