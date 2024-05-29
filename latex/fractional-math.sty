@@ -16,6 +16,12 @@
 
 	% math
 	reduce	 					.bool_set:N		= \l__fracmath_reduce_bool ,
+	current~variable			.tl_set:N		= \l__fracmath_current_variable_tl ,
+	current~operator			.tl_set:N		= \l__fracmath_current_operator_tl ,
+	add~to~variable				.meta:n			= {
+			current~variable = {#1} ,
+			current~operator = {+}
+		} ,
 }
 
 \NewDocumentCommand { \fracKeys } { m } {
@@ -205,6 +211,13 @@
 		\keys_set:nn { fractional-math } { #1 }
 
 		\fracmath_parse:Nn \l__fracmath_tmpa_prop { #2 }
+
+		\tl_if_empty:NF \l__fracmath_current_variable_tl {
+			\fracmath_garithmetic:cVN
+				{ g_fracmath_ \l__fracmath_current_variable_tl _var }
+				\l__fracmath_current_operator_tl
+				\l__fracmath_tmpa_prop
+		}
 
 		\fracmath_format:N \l__fracmath_tmpa_prop
 	\group_end:
