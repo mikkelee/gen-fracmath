@@ -22,6 +22,10 @@
 			current~variable = {#1} ,
 			current~operator = {+}
 		} ,
+	subtract~from~variable		.meta:n			= {
+			current~variable = {#1} ,
+			current~operator = {-}
+		} ,
 }
 
 \NewDocumentCommand { \fracKeys } { m } {
@@ -119,7 +123,8 @@
 	\fracmath_prepare:N #3
 
 	\regex_match_case:nn {
-		{ \A \+ \Z } { \fracmath_gadd:NN #1 #3 }
+		{ \A \+ \Z } { \fracmath_gsum:NnN #1 #2 #3 }
+		{ \A \- \Z } { \fracmath_gsum:NnN #1 #2 #3 }
 	} { #2 }
 }
 \cs_generate_variant:Nn \fracmath_garithmetic:NnN
@@ -127,23 +132,23 @@
 	cnN, cVN
 }
 
-% Adds two a fractional numbers
-\cs_new_protected:Nn \fracmath_gadd:NN
+% Adds or subtracts two values
+\cs_new_protected:Nn \fracmath_gsum:NnN
 {
 	\int_zero_new:N \l__fracmath_tmp_value_int
 	\int_set:Nn \l__fracmath_tmp_value_int {
-		\prop_item:Nn #1 { integer } + \prop_item:Nn #2 { integer } 
+		\prop_item:Nn #1 { integer } #2 \prop_item:Nn #3 { integer } 
 	}
 	\prop_gput:NnV #1 { integer } \l__fracmath_tmp_value_int
 
 	\int_set:Nn \l__fracmath_tmp_value_int {
-		( \prop_item:Nn #1 { numerator } * \prop_item:Nn #2 { denominator } ) +
-		( \prop_item:Nn #2 { numerator } * \prop_item:Nn #1 { denominator } )
+		( \prop_item:Nn #1 { numerator } * \prop_item:Nn #3 { denominator } ) #2
+		( \prop_item:Nn #3 { numerator } * \prop_item:Nn #1 { denominator } )
 	}
 	\prop_gput:NnV #1 { numerator } \l__fracmath_tmp_value_int
 
 	\int_set:Nn \l__fracmath_tmp_value_int {
-		\prop_item:Nn #1 { denominator } * \prop_item:Nn #2 { denominator }
+		\prop_item:Nn #1 { denominator } * \prop_item:Nn #3 { denominator }
 	}
 	\prop_gput:NnV #1 { denominator } \l__fracmath_tmp_value_int
 }
