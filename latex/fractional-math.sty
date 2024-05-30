@@ -116,16 +116,28 @@
 	\int_set:Nn \l__fracmath_tmp_numerator_int { \prop_item:Nn #1 { numerator } }
 	\int_set:Nn \l__fracmath_tmp_denominator_int { \prop_item:Nn #1 { denominator } }
 
-	\int_while_do:nn { \l__fracmath_tmp_numerator_int >= \l__fracmath_tmp_denominator_int } {
-		\int_add:Nn \l__fracmath_tmp_integer_int { 1 }
-		\int_sub:Nn \l__fracmath_tmp_numerator_int { \l__fracmath_tmp_denominator_int }
+	\int_compare:nNnT { \l__fracmath_tmp_numerator_int } < {0} {
+		\bool_set_true:N \l__fracmath_is_negative_bool
+		\int_set:Nn \l__fracmath_tmp_numerator_int { -\l__fracmath_tmp_numerator_int }
 	}
 
-	\bool_if:NT \l__fracmath_is_negative_bool {
-		\int_set:Nn \l__fracmath_tmp_integer_int { -\l__fracmath_tmp_integer_int }
+	\int_set:Nn \l_tmpa_int {
+		\int_div_truncate:nn { \l__fracmath_tmp_numerator_int } { \l__fracmath_tmp_denominator_int }
+	} 
+	\int_add:Nn \l__fracmath_tmp_integer_int { \l_tmpa_int }
+	\int_sub:Nn \l__fracmath_tmp_numerator_int { \l_tmpa_int * \l__fracmath_tmp_denominator_int }
+
+	\bool_if:NTF \l__fracmath_is_negative_bool {
+		\int_compare:nNnTF { \l__fracmath_tmp_integer_int } = {0} {
+			\prop_put:Nnn #1 { integer } { $-$ }
+		} {
+			\int_set:Nn \l__fracmath_tmp_integer_int { -\l__fracmath_tmp_integer_int }
+			\prop_put:NnV #1 { integer } \l__fracmath_tmp_integer_int
+		}
+	} {
+		\prop_put:NnV #1 { integer } \l__fracmath_tmp_integer_int
 	}
 
-	\prop_put:NnV #1 { integer } \l__fracmath_tmp_integer_int
 	\int_compare:nNnTF { \l__fracmath_tmp_numerator_int } > {0} {
 		\fracmath_reduce_fraction:NN
 			\l__fracmath_tmp_numerator_int
