@@ -58,7 +58,6 @@
 	V
 }
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parsing
 % 
@@ -87,11 +86,60 @@
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Arithmetic
+% Conversion
 % 
 
+\cs_new_protected:Nn \fracmath_gcd:nn
+{
+	\int_if_zero:nTF { #2 }
+		{ #1 }
+		{ \fracmath_gcd:nn { #2 } { \int_mod:nn { #1 } { #2 } } }
+}
+
+\cs_new_protected:Nn \fracmath_reduce_fraction:NN
+{
+	\int_set:Nn \l_tmpa_int { \fracmath_gcd:nn { #1 } { #2 } }
+	\int_set:Nn #1 { #1 / \l_tmpa_int }
+	\int_set:Nn #2 { #2 / \l_tmpa_int }
+}
+
+\bool_new:N \l__fracmath_is_negative_bool
+
+% Reduces a value, eg "1 6/4" => "2 1/2"
+\cs_new_protected:Nn \fracmath_to_mixed:N
+{
+	\fracmath_to_improper:N #1
+
+	\int_zero_new:N \l__fracmath_tmp_integer_int
+	\int_zero_new:N \l__fracmath_tmp_numerator_int
+	\int_zero_new:N \l__fracmath_tmp_denominator_int
+	\int_set:Nn \l__fracmath_tmp_numerator_int { \prop_item:Nn #1 { numerator } }
+	\int_set:Nn \l__fracmath_tmp_denominator_int { \prop_item:Nn #1 { denominator } }
+
+	\int_while_do:nn { \l__fracmath_tmp_numerator_int >= \l__fracmath_tmp_denominator_int } {
+		\int_add:Nn \l__fracmath_tmp_integer_int { 1 }
+		\int_sub:Nn \l__fracmath_tmp_numerator_int { \l__fracmath_tmp_denominator_int }
+	}
+
+	\bool_if:NT \l__fracmath_is_negative_bool {
+		\int_set:Nn \l__fracmath_tmp_integer_int { -\l__fracmath_tmp_integer_int }
+	}
+
+	\prop_put:NnV #1 { integer } \l__fracmath_tmp_integer_int
+	\int_compare:nNnTF { \l__fracmath_tmp_numerator_int } > {0} {
+		\fracmath_reduce_fraction:NN
+			\l__fracmath_tmp_numerator_int
+			\l__fracmath_tmp_denominator_int
+		\prop_put:NnV #1 { numerator } \l__fracmath_tmp_numerator_int
+		\prop_put:NnV #1 { denominator } \l__fracmath_tmp_denominator_int
+	} {
+		\prop_remove:Nn #1 { numerator }
+		\prop_remove:Nn #1 { denominator }
+	}
+}
+
 % converts a mixed number into an improper fraction, eg "a b/c" => "0 (ac+b)/c"
-\cs_new_protected:Nn \fracmath_prepare:N
+\cs_new_protected:Nn \fracmath_to_improper:N
 {
 	\prop_put_if_new:Nnn #1 { integer } { 0 }
 	\prop_put_if_new:Nnn #1 { numerator } { 0 }
@@ -107,14 +155,18 @@
 	\prop_put:Nnn #1 { integer } { 0 }
 }
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Arithmetic
+% 
+
 \cs_new_protected:Nn \fracmath_garithmetic:NnN
 {
 	\group_begin:
 		\prop_if_exist:NF #1 {
 			\prop_gclear_new:N #1
 		}
-		\fracmath_prepare:N #1
-		\fracmath_prepare:N #3
+		\fracmath_to_improper:N #1
+		\fracmath_to_improper:N #3
 
 		\regex_match_case:nn {
 			{ \A \+ \Z } { \fracmath_gsum:NnN #1 #2 #3 }
@@ -136,7 +188,7 @@
 }
 
 % Adds or subtracts two values
-% NB: assumes they have been through \fracmath_prepare:N!
+% NB: assumes they have been through \fracmath_to_improper:N!
 \cs_new_protected:Nn \fracmath_gsum:NnN
 {
 	\int_zero_new:N \l__fracmath_tmp_value_int
@@ -154,7 +206,7 @@
 }
 
 % Multiplies a value by another value
-% NB: assumes they have been through \fracmath_prepare:N!
+% NB: assumes they have been through \fracmath_to_improper:N!
 \cs_new_protected:Nn \fracmath_gmultiply:NN
 {
 	\int_zero_new:N \l__fracmath_tmp_value_int
@@ -172,57 +224,10 @@
 % User commands
 % 
 
-\cs_new_protected:Nn \fracmath_gcd:nn
-{
-	\int_if_zero:nTF { #2 }
-		{ #1 }
-		{ \fracmath_gcd:nn { #2 } { \int_mod:nn { #1 } { #2 } } }
-}
-
-\cs_new_protected:Nn \fracmath_reduce_fraction:NN
-{
-	\int_set:Nn \l_tmpa_int { \fracmath_gcd:nn { #1 } { #2 } }
-	\int_set:Nn #1 { #1 / \l_tmpa_int }
-	\int_set:Nn #2 { #2 / \l_tmpa_int }
-}
-
-% Reduces a value, eg "1 6/4" => "2 1/2"
-\cs_new_protected:Nn \fracmath_reduce:N
-{
-	\fracmath_prepare:N #1
-
-	\int_zero_new:N \l__fracmath_tmp_integer_int
-	\int_zero_new:N \l__fracmath_tmp_numerator_int
-	\int_zero_new:N \l__fracmath_tmp_denominator_int
-	\int_set:Nn \l__fracmath_tmp_numerator_int { \prop_item:Nn #1 { numerator } }
-	\int_set:Nn \l__fracmath_tmp_denominator_int { \prop_item:Nn #1 { denominator } }
-
-	\int_while_do:nn { \l__fracmath_tmp_numerator_int >= \l__fracmath_tmp_denominator_int } {
-		\int_add:Nn \l__fracmath_tmp_integer_int { 1 }
-		\int_sub:Nn \l__fracmath_tmp_numerator_int { \l__fracmath_tmp_denominator_int }
-	}
-
-	\prop_put:NnV #1 { integer } \l__fracmath_tmp_integer_int
-	\int_compare:nNnTF { \l__fracmath_tmp_numerator_int } > {0} {
-		\fracmath_reduce_fraction:NN
-			\l__fracmath_tmp_numerator_int
-			\l__fracmath_tmp_denominator_int
-		\prop_put:NnV #1 { numerator } \l__fracmath_tmp_numerator_int
-		\prop_put:NnV #1 { denominator } \l__fracmath_tmp_denominator_int
-	} {
-		\prop_remove:Nn #1 { numerator }
-		\prop_remove:Nn #1 { denominator }
-	}
-}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% User commands
-% 
-
 \cs_new_protected:Nn \fracmath_format:N
 {
 	\bool_if:NT \l__fracmath_reduce_bool {
-		\fracmath_reduce:N #1
+		\fracmath_to_mixed:N #1
 	}
 
 	\prop_get:NnNT #1 { integer } \l__fracmath_tmp_value_tl {
