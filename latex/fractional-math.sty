@@ -137,6 +137,13 @@
 			{ \A \+ \Z } { \fracmath_gsum:NnN #1 #2 #3 }
 			{ \A \- \Z } { \fracmath_gsum:NnN #1 #2 #3 }
 			{ \A \* \Z } { \fracmath_gmultiply:NN #1 #3 }
+			{ \A \/ \Z } {
+				% division is the same as multiplying by the reciprocal
+				\prop_get:NnN #3 { denominator } \l_tmpa_tl
+				\prop_put:Nne #3 { denominator } { \prop_item:Nn #3 { numerator } }
+				\prop_put:NnV #3 { numerator } \l_tmpa_tl
+				\fracmath_gmultiply:NN #1 #3
+			}
 		} { #2 }
 	\group_end:
 }
