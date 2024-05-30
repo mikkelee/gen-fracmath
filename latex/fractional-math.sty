@@ -107,11 +107,21 @@
 % Arithmetic
 % 
 
+% converts a mixed number into an improper fraction, eg "a b/c" => "0 (ac+b)/c"
 \cs_new_protected:Nn \fracmath_prepare:N
 {
 	\prop_put_if_new:Nnn #1 { integer } { 0 }
 	\prop_put_if_new:Nnn #1 { numerator } { 0 }
 	\prop_put_if_new:Nnn #1 { denominator } { 1 }
+
+	\int_zero_new:N \l__fracmath_tmp_value_int
+	\int_set:Nn \l__fracmath_tmp_value_int {
+		( \prop_item:Nn #1 { integer } * \prop_item:Nn #1 { denominator } ) +
+		\prop_item:Nn #1 { numerator }
+	}
+	\prop_put:NnV #1 { numerator } \l__fracmath_tmp_value_int
+
+	\prop_put:Nnn #1 { integer } { 0 }
 }
 
 \cs_new_protected:Nn \fracmath_garithmetic:NnN
