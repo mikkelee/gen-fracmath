@@ -43,13 +43,33 @@ math
 
 	\fracKeys{subtract from variable=XYZ}
 
-	\logtime{number 1+halv add to XYZ} \hfill \fracFormat{1 1/2}
+	\logtime{number 1+halv subtract from XYZ} \hfill \fracFormat{1 1/2}
+
+	\logtime{result} \hfill \fracResult{XYZ}
+	
+	\logtime{result reduce} \hfill \fracResult[reduce]{XYZ}
+
+	\logtime{number 1+halv subtract from XYZ} \hfill \fracFormat{1 1/2}
+
+	\logtime{number 1+halv subtract from XYZ} \hfill \fracFormat{1 1/2}
+
+	\logtime{number 1+halv subtract from XYZ} \hfill \fracFormat{1 1/2}
+
+	\logtime{number 1+halv subtract from XYZ} \hfill \fracFormat{1 1/2}
 
 	\logtime{result} \hfill \fracResult{XYZ}
 	
 	\logtime{result reduce} \hfill \fracResult[reduce]{XYZ}
 
 \endgroup
+
+\logtime{init ABC = 0.333} \hfill \fracInit{ABC}{ 1/3}
+
+\logtime{math ABC * 3} \hfill \fracMath{ABC}{*}{3}
+
+\logtime{result ABC} \hfill \fracResult{ABC}
+
+\logtime{result ABC reduce} \hfill \fracResult[reduce]{ABC}
 
 \logtime{pre enddoc}
 \end{document}
