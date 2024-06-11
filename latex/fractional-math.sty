@@ -49,8 +49,10 @@
 	V
 }
 
+\regex_const:Nn \c_fracmath_NUMBER_regex { \A [\+\-]?[\d]+ \Z }
+
 \cs_new_protected:Nn \fracmath_number_wrapper:n {
-	\regex_match:nnTF { \A [\+\-]?[\d]+ \Z } {#1}
+	\regex_match:NnTF \c_fracmath_NUMBER_regex {#1}
 		{ \fracmath_number_handler:n {#1} }
 		{ #1 }
 }
@@ -171,6 +173,11 @@
 % Arithmetic
 % 
 
+\regex_const:Nn \c_fracmath_ADD_regex      { \A \+ \Z }
+\regex_const:Nn \c_fracmath_SUBTRACT_regex { \A \- \Z }
+\regex_const:Nn \c_fracmath_MULTIPLY_regex { \A \* \Z }
+\regex_const:Nn \c_fracmath_DIVIDE_regex   { \A \/ \Z }
+
 \cs_new_protected:Nn \fracmath_garithmetic:NnN
 {
 	\group_begin:
@@ -181,10 +188,10 @@
 		\fracmath_to_improper:N #3
 
 		\regex_match_case:nn {
-			{ \A \+ \Z } { \fracmath_gsum:NnN #1 #2 #3 }
-			{ \A \- \Z } { \fracmath_gsum:NnN #1 #2 #3 }
-			{ \A \* \Z } { \fracmath_gmultiply:NN #1 #3 }
-			{ \A \/ \Z } {
+			\c_fracmath_ADD_regex      { \fracmath_gsum:NnN #1 #2 #3 }
+			\c_fracmath_SUBTRACT_regex { \fracmath_gsum:NnN #1 #2 #3 }
+			\c_fracmath_MULTIPLY_regex { \fracmath_gmultiply:NN #1 #3 }
+			\c_fracmath_DIVIDE_regex   {
 				% division is the same as multiplying by the reciprocal
 				\prop_get:NnN #3 { denominator } \l_tmpa_tl
 				\prop_put:Nne #3 { denominator } { \prop_item:Nn #3 { numerator } }
