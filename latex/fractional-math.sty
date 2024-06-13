@@ -13,6 +13,7 @@
 	% styling
 	fraction~style				.cs_set:Np		= \fracmath_fraction_handler:nn #1#2 ,
 	number~style				.cs_set:Np		= \fracmath_number_handler:n #1 ,
+	aligned	 					.bool_set:N		= \l__fracmath_aligned_bool ,
 
 	% math
 	reduce	 					.bool_set:N		= \l__fracmath_reduce_bool ,
@@ -267,7 +268,13 @@
 	}
 
 	\fracmath_format_integer:N #1
-	\fracmath_format_fraction:N #1
+	\bool_if:NTF \l__fracmath_aligned_bool {
+		\hbox_to_wd:nn { 0pt } {
+			\fracmath_format_fraction:N #1
+		}
+	} {
+		\fracmath_format_fraction:N #1
+	}
 }
 \cs_generate_variant:Nn \fracmath_format:N
 {
@@ -318,3 +325,53 @@
 		\fracmath_format:c { g_fracmath_#2_var }
 	\group_end:
 }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Column type for tabularray
+% 
+
+\keys_define:nn { fractional-math }
+{
+	tabularray~column~type		.code			= {
+			\NewColumnType {#1}[1] { Q[r, cmd=\fracmath_tblr_cell:nn {##1}] }
+		} ,
+}
+
+\cs_new_protected:Nn \fracmath_tblr_cell:nn
+{
+	\keys_set:nn { fractional-math } {
+		aligned,
+		#1
+	}
+	\str_case:nnF { #2 } {
+		{ RESULT } {
+				\group_begin:
+				\keys_set:nn { fractional-math } { reduce }
+				\fracmath_format:c { g_fracmath_ \l__fracmath_current_variable_tl _var }
+				\group_end:
+			}
+		{  SKIP  } { } % nothing
+	} {
+		\tl_if_head_is_group:nTF { #2 } {
+			#2
+		} {
+			% format value if no special token was hit
+			% do math only once per tblr cell
+			% Will https://github.com/lvjr/tabularray/issues/179 introduce
+			% eleganter solution?
+			\cs_if_exist:cTF { \fracmath__tblr_cell_get_csname: }
+				% or use a specific bool, e.g., \fracmath__do_math_bool
+				{ \tl_clear:N \l__fracmath_current_variable_tl }
+				{ \cs_gset:cpn { \fracmath__tblr_cell_get_csname: } {} }
+			\fracFormat { #2 }
+		}
+	}
+}
+
+% a csname distinct per tblr table, per cell
+\cs_new:Npn \fracmath__tblr_cell_get_csname:
+	{
+		fracmath__tblr_ \int_use:N \g__tblr_table_count_int
+		_cell_ \int_use:N \c@rownum _ \int_use:N \c@colnum
+		:
+	}
