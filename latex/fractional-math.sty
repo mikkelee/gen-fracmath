@@ -152,6 +152,10 @@
 		\prop_remove:Nn #1 { denominator }
 	}
 }
+\cs_generate_variant:Nn \fracmath_to_mixed:N
+{
+	c
+}
 
 % converts a mixed number into an improper fraction, eg "a b/c" => "0 (ac+b)/c"
 \cs_new_protected:Nn \fracmath_to_improper:N
@@ -168,6 +172,10 @@
 	\prop_put:NnV #1 { numerator } \l__fracmath_tmp_value_int
 
 	\prop_put:Nnn #1 { integer } { 0 }
+}
+\cs_generate_variant:Nn \fracmath_to_improper:N
+{
+	c
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -244,6 +252,13 @@
 % Formatting
 % 
 
+\cs_new_protected:Nn \fracmath_format_prepare:N
+{
+	\bool_if:NT \l__fracmath_reduce_bool {
+		\fracmath_to_mixed:N #1
+	}
+}
+
 \cs_new_protected:Nn \fracmath_format_integer:N
 {
 	\prop_get:NnNT #1 { integer } \l__fracmath_tmp_value_tl {
@@ -261,19 +276,32 @@
 	}
 }
 
+\cs_new_protected:Nn \fracmath_format_regular:N
+{
+	\fracmath_format_prepare:N #1
+	\fracmath_format_integer:N #1
+	\fracmath_format_fraction:N #1
+}
+
+\cs_new_protected:Nn \fracmath_format_aligned:N
+{
+	\fracmath_format_prepare:N #1
+	\fracmath_format_integer:N #1
+	\hbox_to_zero:n {
+		\fracmath_format_fraction:N #1
+	}
+}
+\cs_generate_variant:Nn \fracmath_format_aligned:N
+{
+	c
+}
+
 \cs_new_protected:Nn \fracmath_format:N
 {
-	\bool_if:NT \l__fracmath_reduce_bool {
-		\fracmath_to_mixed:N #1
-	}
-
-	\fracmath_format_integer:N #1
 	\bool_if:NTF \l__fracmath_aligned_bool {
-		\hbox_to_wd:nn { 0pt } {
-			\fracmath_format_fraction:N #1
-		}
+		\fracmath_format_aligned:N #1
 	} {
-		\fracmath_format_fraction:N #1
+		\fracmath_format_regular:N #1
 	}
 }
 \cs_generate_variant:Nn \fracmath_format:N
