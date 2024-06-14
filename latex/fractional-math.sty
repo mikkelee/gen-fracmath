@@ -371,7 +371,7 @@
 {
 	tabularray~column~type		.code			= {
 			\AtBeginEnvironment{tblr}{ \dim_zero:N \l__fracmath_current_overhang_dim }
-			\NewColumnType {#1}[1] { Q[r, cmd=\fracmath_tblr_cell:nn {##1}] }
+			\NewColumnType {#1}[1] { Q[r, cmd=\fracmath_tblr_cell:nn {##1}, rightsep+=\l__fracmath_current_overhang_dim] }
 			\AtEndEnvironment{tblr}{ \dim_zero:N \l__fracmath_current_overhang_dim }
 		} ,
 }
