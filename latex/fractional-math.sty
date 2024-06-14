@@ -14,6 +14,7 @@
 	fraction~style				.cs_set:Np		= \fracmath_fraction_handler:nn #1#2 ,
 	number~style				.cs_set:Np		= \fracmath_number_handler:n #1 ,
 	aligned	 					.bool_set:N		= \l__fracmath_aligned_bool ,
+	fraction~overhang			.dim_set:N		= \l__fracmath_minimum_overhang_dim ,
 
 	% math
 	reduce	 					.bool_set:N		= \l__fracmath_reduce_bool ,
@@ -41,6 +42,7 @@
 	number~style = {
 		#1
 	},
+	fraction~overhang = 0em ,
 }
 
 \cs_generate_variant:Nn \fracmath_fraction_handler:nn {
@@ -287,8 +289,12 @@
 {
 	\fracmath_format_prepare:N #1
 	\fracmath_format_integer:N #1
+	\hbox_set:Nn \l_tmpa_box { \fracmath_format_fraction:N #1 }
+	\dim_set:Nn \l__fracmath_current_overhang_dim {
+		\dim_max:nn { \l__fracmath_current_overhang_dim } { \box_wd:N \l_tmpa_box }
+	}
 	\hbox_to_zero:n {
-		\fracmath_format_fraction:N #1
+		\box_use:N \l_tmpa_box
 	}
 }
 \cs_generate_variant:Nn \fracmath_format_aligned:N
@@ -362,9 +368,12 @@
 % Column type for tabularray
 % 
 
+\dim_zero_new:N \l__fracmath_current_overhang_dim
+
 \keys_define:nn { fractional-math }
 {
 	tabularray~column~type		.code			= {
+			\UseTblrLibrary { functional }
 			\NewColumnType {#1}[1] { Q[r, cmd=\fracmath_tblr_cell:nn {##1}] }
 		} ,
 }
@@ -377,10 +386,8 @@
 	}
 	\str_case:nnF { #2 } {
 		{ RESULT } {
-				\group_begin:
-				\keys_set:nn { fractional-math } { reduce }
-				\fracmath_format:c { g_fracmath_ \l__fracmath_current_variable_tl _var }
-				\group_end:
+				\fracmath_to_mixed:c { g_fracmath_ \l__fracmath_current_variable_tl _var }
+				\fracmath_format_aligned:c { g_fracmath_ \l__fracmath_current_variable_tl _var }
 			}
 		{  SKIP  } { } % nothing
 	} {
@@ -395,8 +402,26 @@
 				% or use a specific bool, e.g., \fracmath__do_math_bool
 				{ \tl_clear:N \l__fracmath_current_variable_tl }
 				{ \cs_gset:cpn { \fracmath__tblr_cell_get_csname: } {} }
-			\fracFormat { #2 }
+
+			\fracmath_parse:Nn \l__fracmath_tmpa_prop { #2 }
+
+			\tl_if_empty:NF \l__fracmath_current_variable_tl {
+				\fracmath_garithmetic:cVN
+					{ g_fracmath_ \l__fracmath_current_variable_tl _var }
+					\l__fracmath_current_operator_tl
+					\l__fracmath_tmpa_prop
+			}
+
+			\fracmath_format_aligned:N \l__fracmath_tmpa_prop
 		}
+	}
+	
+	\int_compare:nNnT { \c@rownum } = { \arabic{rowcount} } {
+		\dim_set:Nn \l__fracmath_current_overhang_dim {
+			\dim_max:nn { \l__fracmath_current_overhang_dim } { \l__fracmath_minimum_overhang_dim }
+		}
+
+		\columnSetStyle { \c@colnum } { rightsep = \l__fracmath_current_overhang_dim }
 	}
 }
 
