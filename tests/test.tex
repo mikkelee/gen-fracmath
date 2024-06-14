@@ -9,12 +9,16 @@
 	{fractional-math}
 \typeout{post usepackage: \the\pdfelapsedtime}
 
-\fracKeys{
-	number style = {\num{#1}}
-}
-
 \usepackage{siunitx}
 \sisetup{locale = UK}
+
+\usepackage{tabularray}
+\UseTblrLibrary{booktabs}
+
+\fracKeys{
+	number style = {\num{#1}},
+	tabularray column type=F,
+}
 
 \typeout{pre begindoc: \the\pdfelapsedtime}
 \begin{document} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -78,6 +82,23 @@ math
 \logtime{result ABC} \hfill \fracResult{ABC}
 
 \logtime{result ABC reduce} \hfill \fracResult[reduce]{ABC}
+
+
+\logtime{pre tabularray table}
+
+\begin{tblr}{r F{add to variable=col1}|}
+	\toprule
+	& {{{value}}} \\
+	\midrule
+	a & 1 1/2 \\
+	b & 2 30/50 \\
+	c & 4 \\
+	\bottomrule
+	& RESULT \\
+\end{tblr}
+
+\logtime{post tabularray table}
+
 
 \logtime{pre enddoc}
 \end{document}
