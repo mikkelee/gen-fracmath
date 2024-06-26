@@ -12,7 +12,7 @@
 {
 	% styling
 	fraction~style				.cs_set:Np		= \fracmath_fraction_handler:nn #1#2 ,
-	number~style				.cs_set:Np		= \fracmath_number_handler:n #1 ,
+	integer~style				.cs_set:Np		= \fracmath_integer_handler:n #1 ,
 	aligned	 					.bool_set:N		= \l__fracmath_aligned_bool ,
 	fraction~overhang			.dim_set:N		= \l__fracmath_minimum_overhang_dim ,
 
@@ -39,7 +39,7 @@
 	fraction~style = {
 		$\frac{#1}{#2}$
 	},
-	number~style = {
+	integer~style = {
 		#1
 	},
 	fraction~overhang = 0em ,
@@ -48,18 +48,18 @@
 \cs_generate_variant:Nn \fracmath_fraction_handler:nn {
 	VV
 }
-\cs_generate_variant:Nn \fracmath_number_handler:n {
+\cs_generate_variant:Nn \fracmath_integer_handler:n {
 	V
 }
 
-\regex_const:Nn \c_fracmath_NUMBER_regex { \A [\+\-]?[\d]+ \Z }
+\regex_const:Nn \c_fracmath_INTEGER_regex { \A [\+\-]?[\d]+ \Z }
 
-\cs_new_protected:Nn \fracmath_number_wrapper:n {
-	\regex_match:NnTF \c_fracmath_NUMBER_regex {#1}
-		{ \fracmath_number_handler:n {#1} }
+\cs_new_protected:Nn \fracmath_integer_wrapper:n {
+	\regex_match:NnTF \c_fracmath_INTEGER_regex {#1}
+		{ \fracmath_integer_handler:n {#1} }
 		{ #1 }
 }
-\cs_generate_variant:Nn \fracmath_number_wrapper:n {
+\cs_generate_variant:Nn \fracmath_integer_wrapper:n {
 	V
 }
 
@@ -264,7 +264,7 @@
 \cs_new_protected:Nn \fracmath_format_integer:N
 {
 	\prop_get:NnNT #1 { integer } \l__fracmath_tmp_value_tl {
-		\fracmath_number_wrapper:V \l__fracmath_tmp_value_tl
+		\fracmath_integer_wrapper:V \l__fracmath_tmp_value_tl
 	}
 }
 
