@@ -15,6 +15,7 @@
 	integer~style				.cs_set:Np		= \fracmath_integer_handler:n #1 ,
 	aligned	 					.bool_set:N		= \l__fracmath_aligned_bool ,
 	fraction~overhang			.dim_set:N		= \l__fracmath_minimum_overhang_dim ,
+	include~zero				.bool_set:N		= \l__fracmath_include_zero_bool ,
 
 	% math
 	reduce	 					.bool_set:N		= \l__fracmath_reduce_bool ,
@@ -261,10 +262,17 @@
 	}
 }
 
+\tl_const:Nn \c__fracmath_ZERO_tl { 0 }
+
 \cs_new_protected:Nn \fracmath_format_integer:N
 {
 	\prop_get:NnNT #1 { integer } \l__fracmath_tmp_value_tl {
-		\fracmath_integer_wrapper:V \l__fracmath_tmp_value_tl
+		\bool_if:nT {
+			\l__fracmath_include_zero_bool ||
+			! \tl_if_eq_p:NN \l__fracmath_tmp_value_tl \c__fracmath_ZERO_tl
+		} {
+			\fracmath_integer_wrapper:V \l__fracmath_tmp_value_tl
+		}
 	}
 }
 
